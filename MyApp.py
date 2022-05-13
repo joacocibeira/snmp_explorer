@@ -15,7 +15,9 @@ from queries import create, insert, db_connect, db_insert
 from XmlHandler import XmlHandler as XH
 # ---------------------------------------------------------------------------
 
-
+# ---------------------------------------------------------------------------
+#Funciones  SNMP
+# ---------------------------------------------------------------------------
 def get(target, oids, credentials, port=161, engine=hlapi.SnmpEngine(), context=hlapi.ContextData()):
     handler = hlapi.getCmd(
         engine,
@@ -62,25 +64,29 @@ def cast(value):
                 pass
     return value
 
+# ---------------------------------------------------------------------------
+#Funciones de procesamiento de strings
+# ---------------------------------------------------------------------------
 def extract_data(s):
     lista = [x.split(':') for x in s.split(';')[1:]]
     d = {x[0].strip():re.findall(r'[a-zA-Z0-9_.-]+',x[1])[0] for x in lista}
     return d
 
 
-ipv4_rule = r'\b(?:\d{1,3}\.){3}\d{1,3}\b'
+ipv4_rule = r'\b(?:\d{1,3}\.){3}\d{1,3}\b' # formato IPv4 255.255.255.255
 
 def main():
 
+    #En caso de no existir las variables de ambiente para las credenciales, son creadas
     if 'DB_USER' not in os.environ.keys():
         os.environ['DB_USER'] = input('por favor ingrese el usuario de la base de datos: ')
     if 'DB_PASSWORD' not in os.environ.keys():
         os.environ['DB_PASSWORD'] = input('por favor ingrese la password de la base de datos: ')
 
+    #Conexion con la base de datos
     db = db_connect('localhost', os.environ['DB_USER'], os.environ['DB_PASSWORD'])
     cursor = db.cursor()
     cursor.execute(create)
-
 
     try:
         ip, oid, mode = sys.argv[1:]
@@ -94,27 +100,28 @@ def main():
     mib = get(ip, [oid], hlapi.CommunityData('private'))
     data = extract_data(mib[f'{oid}'])
     data = {key:value for (key,value) in data.items() if key in ['VENDOR','MODEL','SW_REV']}
-    if mode == 'db':
+
+    if mode == 'db':                    #modo de operacion por base de datos                
         if db_insert(cursor,data):
             db.commit()
             print('CM listado exitosamente en la base de datos')
         else:
             db.rollback()
-    elif mode == 'file':
+    elif mode == 'file':                #modo de operacion por archivo           
         x = XH('cm_models.xml')
         if not x.search_file(data):
             x.file_append(data)
-    elif mode == 'both':
+    elif mode == 'both':                #modo de operacion por base de datos y archivo
         if db_insert(cursor,data):
             x = XH('cm_models.xml')
-            if x.search_file(data):
+            if not x.search_file(data):
                 x.file_append(data)
                 db.commit()
                 print('CM listado exitosamente en la base de datos')
             else:
                 db.rollback()
     else:
-        print('Modo incorrecto, los modos correctos son [db|file|both')
+        print('Modo incorrecto, los modos correctos son [db|file|both]')
     
     cursor.close()
     db.close()
