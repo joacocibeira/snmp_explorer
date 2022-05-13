@@ -4,7 +4,8 @@
 # Created Date: 05/11/2022
 # version ='1.0'
 # ---------------------------------------------------------------------------
-""" Details about the module and for what purpose it was built for"""  
+""" Este script permite obtener los datos de fabricacion de un cablemodem con su direccion IP 
+    a travez del protocolo SNMP """  
 # ---------------------------------------------------------------------------
 import re
 import os
