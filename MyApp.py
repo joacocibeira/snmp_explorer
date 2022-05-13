@@ -42,7 +42,8 @@ def fetch(handler, count):
                         items[str(var_bind[0])] = cast(var_bind[1])
                     result.append(items)
                 else:
-                    raise RuntimeError('Got SNMP error: {0}'.format(error_indication))
+                    print('Error de respuesta, puede que no exista un CM en esta IP')
+                    sys.exit()
             except StopIteration:
                 break
         return result
