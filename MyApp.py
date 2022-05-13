@@ -74,7 +74,7 @@ def extract_data(s):
 
 
 ipv4_rule = r'\b(?:\d{1,3}\.){3}\d{1,3}\b' # formato IPv4 255.255.255.255
-
+oid = '1.3.6.1.2.1.1.1.0'
 def main():
 
     #En caso de no existir las variables de ambiente para las credenciales, son creadas
@@ -89,9 +89,9 @@ def main():
     cursor.execute(create)
 
     try:
-        ip, oid, mode = sys.argv[1:]
+        ip, mode = sys.argv[1:]
     except:
-        print('Por favor ingrese IP, OID y modo separados por un espacio \n ej: "255.255.255.255 1.3.6.1.2.1.1.1.0 db"')    
+        print('Por favor ingrese IP y modo separados por un espacio \n ej: "255.255.255.255 1.3.6.1.2.1.1.1.0 db"')    
         sys.exit()
 
     if not re.search(ipv4_rule,ip):
